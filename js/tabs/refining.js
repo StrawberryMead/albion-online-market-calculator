@@ -7,7 +7,7 @@
 
 import { h, clear, toast } from "../utils/dom.js";
 import { silver, pct, iconUrl, localName } from "../utils/fmt.js";
-import { itemSearch } from "./_common.js";
+import { itemSearch } from "./common.js";
 import { getPrices } from "../api.js";
 import * as Items from "../items.js";
 import { get as getSetting } from "../settings.js";

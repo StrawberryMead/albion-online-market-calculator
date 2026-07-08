@@ -3,7 +3,7 @@
 
 import { h, clear } from "../utils/dom.js";
 import { silver, pct, relTime, iconUrl, localName } from "../utils/fmt.js";
-import { itemSearch } from "./_common.js";
+import { itemSearch } from "./common.js";
 import { getPrices } from "../api.js";
 import { get as getSetting } from "../settings.js";
 

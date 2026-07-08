@@ -2,7 +2,7 @@
 
 import { h, clear, mount, toast } from "../utils/dom.js";
 import { silver, num, relTime, iconUrl, localName } from "../utils/fmt.js";
-import { itemSearch } from "./_common.js";
+import { itemSearch } from "./common.js";
 import { getPrices, getHistory } from "../api.js";
 import { renderLineChart } from "../utils/chart.js";
 import { get as getSetting } from "../settings.js";

@@ -1,4 +1,4 @@
-// js/tabs/_common.js
+// js/tabs/common.js
 // Shared helpers for tab UIs.
 
 import { h, clear, toast } from "../utils/dom.js";
