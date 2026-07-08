@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Albion Market Calculator</title>
+  <link rel="stylesheet" href="css/main.css" />
+  <link rel="stylesheet" href="css/components.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div class="brand">
+      <span class="brand-mark">AO</span>
+      <h1>Market Calculator</h1>
+    </div>
+    <nav class="tabs" id="tabs">
+      <a href="#prices"    data-tab="prices"    class="tab">Prices</a>
+      <a href="#crafting"  data-tab="crafting"  class="tab">Crafting</a>
+      <a href="#refining"  data-tab="refining"  class="tab">Refining</a>
+      <a href="#transport" data-tab="transport" class="tab">Transport</a>
+      <a href="#settings"  data-tab="settings"  class="tab">Settings</a>
+    </nav>
+    <div class="header-meta">
+      <span id="server-badge" class="badge">West</span>
+    </div>
+  </header>
+
+  <main id="main">
+    <section id="tab-prices"    class="tab-panel"></section>
+    <section id="tab-crafting"  class="tab-panel"></section>
+    <section id="tab-refining"  class="tab-panel"></section>
+    <section id="tab-transport" class="tab-panel"></section>
+    <section id="tab-settings"  class="tab-panel"></section>
+  </main>
+
+  <div id="toast-host" class="toast-host" aria-live="polite"></div>
+
+  <footer class="app-footer">
+    <span>Data: <a href="https://www.albion-online-data.com/" target="_blank" rel="noopener">Albion Online Data Project</a></span>
+    <span>&middot;</span>
+    <span>Items: <a href="https://github.com/ao-data/ao-bin-dumps" target="_blank" rel="noopener">ao-bin-dumps</a></span>
+    <span>&middot;</span>
+    <span>Not affiliated with Sandbox Interactive.</span>
+  </footer>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
