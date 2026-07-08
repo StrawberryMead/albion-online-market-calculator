@@ -56,16 +56,19 @@ export async function render(host) {
   );
 
   const itemsCard = h("div", { class: "card" },
-    h("h2", null, "Item database"),
+    h("h2", null, "Item and recipe database"),
     h("div", null,
-      "Loaded: ", h("strong", null, Items.count().toLocaleString()), " items",
-      updatedAt ? ` (updated ${relTime(updatedAt)})` : " (from shipped file)"
+      "Items loaded: ", h("strong", null, Items.count().toLocaleString()),
+      h("br"),
+      "Recipes loaded: ", h("strong", null, Items.recipeCount().toLocaleString()),
+      updatedAt ? h("div", { class: "hint", style: "margin-top:4px;" }, `Last sync: ${relTime(updatedAt)}`) : h("div", { class: "hint", style: "margin-top:4px;" }, "Using shipped files")
     ),
+    h("div", { id: "sync-status", class: "hint", style: "margin-top:8px;" }),
     h("div", { style: "margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;" },
-      h("button", { class: "primary", onclick: doRefresh }, "Update from ao-bin-dumps"),
-      h("button", { onclick: doClearOverlay }, "Reset to shipped file")
+      h("button", { id: "sync-btn", class: "primary", onclick: doRefresh }, "Update from ao-bin-dumps"),
+      h("button", { onclick: doClearOverlay }, "Reset to shipped files")
     ),
-    h("div", { class: "hint", style: "margin-top:8px;" }, "Fetches the latest items.json from GitHub raw and stores a minified copy in IndexedDB. This runs entirely in your browser.")
+    h("div", { class: "hint", style: "margin-top:8px;" }, "Fetches items.json (full dump w/ crafting requirements) and formatted/items.json (localized names) from ao-data/ao-bin-dumps. Results are stored in IndexedDB. This runs entirely in your browser and may transfer ~20-30 MB.")
   );
 
   const aboutCard = h("div", { class: "card" },
@@ -80,19 +83,25 @@ export async function render(host) {
   host.append(serverCard, localeCard, cacheCard, rateCard, itemsCard, aboutCard);
 
   async function doRefresh() {
-    toast("Fetching latest items.json...");
+    const btn = host.querySelector("#sync-btn");
+    const status = host.querySelector("#sync-status");
+    if (btn) { btn.disabled = true; btn.textContent = "Syncing..."; }
+    const onProgress = (msg) => { if (status) status.textContent = msg; };
+    onProgress("Starting sync...");
     try {
-      const { count } = await Items.refreshFromRemote();
-      toast(`Item database updated (${count.toLocaleString()} items)`, "success");
+      const { count, recipeCount } = await Items.refreshFromRemote(onProgress);
+      toast(`Updated: ${count.toLocaleString()} items, ${recipeCount.toLocaleString()} recipes`, "success");
       render(host);
     } catch (e) {
-      toast("Update failed: " + e.message, "error");
+      if (status) status.textContent = "";
+      toast("Update failed: " + e.message, "error", 6000);
+      if (btn) { btn.disabled = false; btn.textContent = "Update from ao-bin-dumps"; }
     }
   }
   async function doClearOverlay() {
     try {
       await Items.clearOverlay();
-      toast("Reverted to shipped item database", "success");
+      toast("Reverted to shipped databases", "success");
       render(host);
     } catch (e) {
       toast("Reset failed: " + e.message, "error");

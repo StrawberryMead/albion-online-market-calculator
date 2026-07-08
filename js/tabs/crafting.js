@@ -7,14 +7,6 @@ import { getPrices } from "../api.js";
 import * as Items from "../items.js";
 import { get as getSetting } from "../settings.js";
 
-let recipesPromise;
-async function recipes() {
-  if (!recipesPromise) {
-    recipesPromise = fetch("data/recipes.min.json").then(r => r.json());
-  }
-  return recipesPromise;
-}
-
 let stationsPromise;
 async function stations() {
   if (!stationsPromise) {
@@ -31,20 +23,19 @@ let useFocus = false;
 
 export async function render(host) {
   clear(host);
-  const rmap = await recipes();
   const sta = await stations();
   const lang = getSetting("language") || "EN-US";
 
   const searchCard = h("div", { class: "card" },
     h("h2", null, "Crafting profit"),
-    h("div", { class: "hint" }, `Recipe database is bootstrapped with a small starter set (${Object.keys(rmap).length} items). Extend data/recipes.min.json to cover more items.`),
+    h("div", { class: "hint" }, `Recipe database: ${Items.recipeCount().toLocaleString()} entries. If you don't see a recipe, open Settings and click "Update from ao-bin-dumps".`),
     h("div", { style: "margin-top:8px;" })
   );
   const search = itemSearch((it) => {
     target = it;
-    recipe = rmap[it.id];
+    recipe = Items.getRecipe(it.id);
     if (!recipe) {
-      toast(`No recipe for ${it.id}. Add it to data/recipes.min.json.`, "error");
+      toast(`No recipe for ${it.id}. Try syncing from ao-bin-dumps in Settings.`, "error");
       return;
     }
     materialPrices = {};
@@ -187,19 +178,20 @@ export async function render(host) {
       ? (window.__aomc_focusRR ?? getSetting("focusReturnRate"))
       : (window.__aomc_rr ?? getSetting("returnRate"));
     const rrClamped = Math.max(0, Math.min(0.99, rr));
-    // Effective mat cost per crafted item, given return rate (materials refunded)
+    const amount = Math.max(1, recipe.amount || 1);
+
     let matCostRaw = 0;
     for (const m of recipe.materials) {
       matCostRaw += (materialPrices[m.id] || 0) * m.qty;
     }
     const matCostEff = matCostRaw * (1 - rrClamped);
     const craftFee = recipe.craftingFee ?? 0;
-    const totalCost = matCostEff + craftFee;
+    // Per-batch total cost, then normalize to per-unit if the recipe yields > 1.
+    const totalCostBatch = matCostEff + craftFee;
+    const totalCost = totalCostBatch / amount;
 
     const itemSell = window.__aomc_itemSell || 0;
     const itemBuy  = window.__aomc_itemBuy  || 0;
-    // Sell to buy order (instant) = buy_price_max minus 4% market tax
-    // List on market (patient) = sell_price_min minus 6.5% listing tax (4% + 2.5% setup)
     const revInstant = itemBuy  * (1 - 0.04);
     const revPatient = itemSell * (1 - 0.065);
 
@@ -215,7 +207,7 @@ export async function render(host) {
       cell("Raw mat cost", h("span", { class: "silver" }, silver(matCostRaw))),
       cell("After return", h("span", { class: "silver" }, silver(matCostEff))),
       cell("Crafting fee", h("span", { class: "silver" }, silver(craftFee))),
-      cell("Total cost",   h("span", { class: "silver" }, silver(totalCost))),
+      cell(amount > 1 ? `Total cost (per item, batch ${amount})` : "Total cost", h("span", { class: "silver" }, silver(totalCost))),
       cell(`Sell @ ${sellCity} (instant)`, h("span", { class: "silver" }, silver(revInstant))),
       cell(`Sell @ ${sellCity} (patient)`, h("span", { class: "silver" }, silver(revPatient))),
       cell("Profit instant", h("span", { class: profitInstant >= 0 ? "silver" : "" }, silver(profitInstant)), profitInstant >= 0 ? "pos" : "neg"),
