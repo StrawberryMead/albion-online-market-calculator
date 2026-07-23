@@ -1,0 +1,56 @@
+{
+  "items": {
+    "weapon": [
+      {
+        "@uniquename": "T4_MAIN_SWORD",
+        "craftingrequirements": {
+          "@amountcrafted": "1",
+          "@silver": "480",
+          "@craftingfocus": "36",
+          "craftresource": [
+            { "@uniquename": "T4_METALBAR", "@count": "16" },
+            { "@uniquename": "T3_PLANKS", "@count": "8" }
+          ]
+        }
+      }
+    ],
+    "consumableitem_potion": [
+      {
+        "@uniquename": "T4_POTION_HEAL",
+        "craftingrequirements": {
+          "@amountcrafted": "5",
+          "@silver": "120",
+          "@craftingfocus": "18",
+          "craftresource": [
+            { "@uniquename": "T4_HERB_HEAL", "@count": "4" },
+            { "@uniquename": "T3_HERB_ENERGY", "@count": "4" }
+          ]
+        }
+      }
+    ],
+    "consumableitem_food": [
+      {
+        "@uniquename": "T4_MEAL_OMELETTE",
+        "craftingrequirements": {
+          "@amountcrafted": "5",
+          "@silver": "80",
+          "@craftingfocus": "16",
+          "craftresource": [
+            { "@uniquename": "T4_EGG", "@count": "8" },
+            { "@uniquename": "T3_BUTTER", "@count": "4" }
+          ]
+        }
+      }
+    ],
+    "farmable": [
+      { "@uniquename": "T4_HERB_HEAL" },
+      { "@uniquename": "T3_HERB_ENERGY" },
+      { "@uniquename": "T4_EGG" },
+      { "@uniquename": "T3_BUTTER" }
+    ],
+    "simpleitem": [
+      { "@uniquename": "T4_METALBAR" },
+      { "@uniquename": "T3_PLANKS" }
+    ]
+  }
+}

@@ -1,0 +1,54 @@
+name: Update ao-bin-dumps
+
+on:
+  schedule:
+    - cron: "0 0 * * 0"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages-and-data"
+  cancel-in-progress: true
+
+jobs:
+  refresh:
+    name: Refresh submodule and deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout with submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Configure git author
+        run: |
+          git config user.name "moonlit-lily-bot"
+          git config user.email "actions@users.noreply.github.com"
+
+      - name: Update ao-bin-dumps submodule to origin/master
+        run: |
+          git submodule update --init --remote --depth 1 ao-bin-dumps || true
+          if [ -n "$(git status --porcelain ao-bin-dumps)" ]; then
+            git add ao-bin-dumps
+            git commit -m "chore: refresh ao-bin-dumps submodule"
+            git push
+          else
+            echo "No submodule changes to commit."
+          fi
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload site artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

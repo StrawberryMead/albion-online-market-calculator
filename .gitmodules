@@ -1,0 +1,4 @@
+[submodule "ao-bin-dumps"]
+	path = ao-bin-dumps
+	url = https://github.com/ao-data/ao-bin-dumps.git
+	shallow = true

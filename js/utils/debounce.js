@@ -1,9 +1,10 @@
-// js/utils/debounce.js
-
-export function debounce(fn, ms = 200) {
-  let t;
+export function debounce(fn, ms = 250) {
+  let handle = null;
   return function debounced(...args) {
-    clearTimeout(t);
-    t = setTimeout(() => fn.apply(this, args), ms);
+    if (handle) clearTimeout(handle);
+    handle = setTimeout(() => {
+      handle = null;
+      fn.apply(this, args);
+    }, ms);
   };
 }

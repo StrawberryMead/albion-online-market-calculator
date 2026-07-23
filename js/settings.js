@@ -1,96 +1,49 @@
-// js/settings.js
-// Persistent settings + change-event bus.
-
-const KEY = "aomc.settings.v1";
+const KEY = "moonlit-lily.settings.v1";
 
 const DEFAULTS = {
-  server: "west",                       // "west" | "east" | "europe"
+  server: "america",
   language: "EN-US",
-  qualities: [1, 2, 3, 4, 5],
-  cities: [
-    "Caerleon",
-    "Bridgewatch",
-    "Lymhurst",
-    "Fort Sterling",
-    "Martlock",
-    "Thetford",
-    "Brecilien",
-    "Black Market",
-  ],
-  cacheTtlSec: 300,
-  returnRate: 0.248,
-  focusReturnRate: 0.435,
-  craftingFeePer100nutrition: 0,
+  premium: true,
+  focus: false,
+  city: "Caerleon",
+  marketTaxPremium: 0.04,
+  marketTaxNonPremium: 0.08,
+  cacheTtlMinutes: 15,
+  useCraftingBonus: true,
+  qualityDefault: 1
 };
 
-export const SERVERS = {
-  west:   { label: "West (Americas)", host: "https://west.albion-online-data.com" },
-  east:   { label: "East (Asia)",     host: "https://east.albion-online-data.com" },
-  europe: { label: "Europe",          host: "https://europe.albion-online-data.com" },
-};
+let cache = null;
 
-export const LANGUAGES = [
-  "EN-US","DE-DE","FR-FR","RU-RU","PL-PL","ES-ES","PT-BR","IT-IT",
-  "ZH-CN","KO-KR","JA-JP","ZH-TW","ID-ID","TR-TR","AR-SA",
-];
-
-const listeners = new Set();
-let cache = load();
-
-function load() {
+function read() {
+  if (cache) return cache;
   try {
     const raw = localStorage.getItem(KEY);
-    if (!raw) return { ...DEFAULTS };
-    const parsed = JSON.parse(raw);
-    return { ...DEFAULTS, ...parsed };
+    cache = raw ? { ...DEFAULTS, ...JSON.parse(raw) } : { ...DEFAULTS };
   } catch {
-    return { ...DEFAULTS };
+    cache = { ...DEFAULTS };
   }
+  return cache;
 }
 
-function save() {
-  try {
-    localStorage.setItem(KEY, JSON.stringify(cache));
-  } catch {}
+function write() {
+  try { localStorage.setItem(KEY, JSON.stringify(cache)); } catch {}
 }
 
-export function getSettings() {
-  return { ...cache };
-}
-
-export function get(key) {
-  return cache[key];
-}
-
-export function setMany(patch) {
-  cache = { ...cache, ...patch };
-  save();
-  emit();
-}
-
-export function set(key, value) {
-  cache[key] = value;
-  save();
-  emit();
-}
-
-export function reset() {
-  cache = { ...DEFAULTS };
-  save();
-  emit();
-}
-
-export function onChange(fn) {
-  listeners.add(fn);
-  return () => listeners.delete(fn);
-}
-
-function emit() {
-  for (const fn of listeners) {
-    try { fn(getSettings()); } catch (e) { console.error(e); }
-  }
-}
-
-export function serverHost() {
-  return SERVERS[cache.server]?.host || SERVERS.west.host;
-}
+export const Settings = {
+  get(key) { return read()[key]; },
+  all() { return { ...read() }; },
+  set(key, value) {
+    read();
+    cache[key] = value;
+    write();
+    window.dispatchEvent(new CustomEvent("settings-changed", { detail: { key, value } }));
+  },
+  update(partial) {
+    read();
+    Object.assign(cache, partial);
+    write();
+    window.dispatchEvent(new CustomEvent("settings-changed", { detail: partial }));
+  },
+  defaults() { return { ...DEFAULTS }; }
+};

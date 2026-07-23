@@ -1,56 +1,41 @@
-// js/utils/dom.js
-// Minimal DOM builder helper.
+export const $ = (sel, root = document) => root.querySelector(sel);
+export const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 
-export function h(tag, attrs, ...children) {
-  const el = document.createElement(tag);
-  if (attrs && typeof attrs === "object" && !Array.isArray(attrs) && !(attrs instanceof Node)) {
-    for (const [k, v] of Object.entries(attrs)) {
-      if (v == null || v === false) continue;
-      if (k === "class" || k === "className") {
-        el.className = v;
-      } else if (k === "style" && typeof v === "object") {
-        Object.assign(el.style, v);
-      } else if (k === "dataset" && typeof v === "object") {
-        for (const [dk, dv] of Object.entries(v)) el.dataset[dk] = dv;
-      } else if (k.startsWith("on") && typeof v === "function") {
-        el.addEventListener(k.slice(2).toLowerCase(), v);
-      } else if (k === "html") {
-        el.innerHTML = v;
-      } else if (v === true) {
-        el.setAttribute(k, "");
-      } else {
-        el.setAttribute(k, v);
-      }
+export function el(tag, attrs = {}, children = []) {
+  const node = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (v == null || v === false) continue;
+    if (k === "class") node.className = v;
+    else if (k === "style" && typeof v === "object") Object.assign(node.style, v);
+    else if (k.startsWith("on") && typeof v === "function") node.addEventListener(k.slice(2).toLowerCase(), v);
+    else if (k === "dataset" && typeof v === "object") {
+      for (const [dk, dv] of Object.entries(v)) node.dataset[dk] = dv;
+    } else if (k in node && k !== "list") {
+      try { node[k] = v; } catch { node.setAttribute(k, v); }
+    } else {
+      node.setAttribute(k, v);
     }
-  } else if (attrs != null) {
-    children.unshift(attrs);
   }
-  for (const c of children.flat()) {
+  const kids = Array.isArray(children) ? children : [children];
+  for (const c of kids) {
     if (c == null || c === false) continue;
-    el.append(c instanceof Node ? c : document.createTextNode(String(c)));
+    node.appendChild(typeof c === "string" ? document.createTextNode(c) : c);
   }
-  return el;
-}
-
-export function clear(el) {
-  while (el.firstChild) el.removeChild(el.firstChild);
-  return el;
-}
-
-export function mount(host, node) {
-  clear(host);
-  host.append(node);
   return node;
 }
 
-export function toast(msg, type = "info", ttl = 3500) {
+export function clear(node) {
+  while (node && node.firstChild) node.removeChild(node.firstChild);
+}
+
+export function toast(message, kind = "info", ms = 3200) {
   const host = document.getElementById("toast-host");
   if (!host) return;
-  const el = h("div", { class: `toast ${type}` }, msg);
-  host.append(el);
+  const t = el("div", { class: `toast ${kind}` }, [message]);
+  host.appendChild(t);
   setTimeout(() => {
-    el.style.transition = "opacity .3s";
-    el.style.opacity = "0";
-    setTimeout(() => el.remove(), 300);
-  }, ttl);
+    t.style.opacity = "0";
+    t.style.transition = "opacity 0.3s ease";
+    setTimeout(() => t.remove(), 320);
+  }, ms);
 }
